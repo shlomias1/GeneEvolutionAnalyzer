@@ -1,7 +1,3 @@
-
-```markdown
-# Virus Gene Evolution Analyzer
-
 ## Overview
 The **Virus Gene Evolution Analyzer** is a tool designed to compare viral genomes and analyze the evolutionary processes shaping their genes. This tool computes the **dN/dS ratio** for common protein-coding genes shared between two viral genomes (in this case, SARS-CoV-2 strains). The **dN/dS ratio** is a key indicator of the evolutionary pressures acting on genes, classifying them into three categories:
 
