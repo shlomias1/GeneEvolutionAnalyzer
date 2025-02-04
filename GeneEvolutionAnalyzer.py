@@ -1,6 +1,8 @@
 import io
 from Bio import Entrez, SeqIO
 from Bio.codonalign.codonseq import CodonSeq, cal_dn_ds
+from Bio.Align import PairwiseAligner
+from Bio.Data import CodonTable
 
 def calculate_synonymous_positions(codon, gencode):
     synonymous_count = 0
@@ -62,52 +64,72 @@ def compare_gene_sets(gene_set_1, gene_set_2, genome_1, genome_2):
     print(f"Genes in {genome_2} but not in {genome_1}: {unique_genes_2}")
     return common_genes
 
+def pad_sequence(seq):
+    """Pads sequence with 'N' to make it divisible by 3."""
+    while len(seq) % 3 != 0:
+        seq += "N"
+    return seq
+
+def align_sequences(seq1, seq2):
+    """Align two sequences using PairwiseAligner with codon-based alignment."""
+    aligner = PairwiseAligner()
+    aligner.mode = 'global'  # Ensure full alignment
+    aligner.open_gap_score = -2  # Penalty for opening a gap
+    aligner.extend_gap_score = -0.5  # Penalty for extending a gap
+    alignments = list(aligner.align(seq1, seq2))
+    best_alignment = alignments[0]  # Choose the best alignment
+    aligned_seq1 = best_alignment.target  # Aligned sequence from target
+    aligned_seq2 = best_alignment.query  # Aligned sequence from query
+    return aligned_seq1, aligned_seq2
+
+def remove_stop_codons(seq):
+    """Removes stop codons from a sequence entirely."""
+    stop_codons = {"TAA", "TAG", "TGA"}
+    clean_seq = []
+    
+    for i in range(0, len(seq) - 2, 3):
+        codon = seq[i:i+3]
+        if codon not in stop_codons:
+            clean_seq.append(codon)
+    return "".join(clean_seq)  # Return a sequence without stop codons
+
 def calculate_dn_ds_for_common_genes(common_genes, records_1, records_2):
     results = []
-    stop_codons = {"TAA", "TAG", "TGA"}  # קודוני עצירה
+    codon_table = CodonTable.unambiguous_dna_by_id[1]
     for gene in common_genes:
-        seq1 = ""
-        seq2 = ""      
+        seq1, seq2 = "", ""
         for record in records_1:
             for feature in record.features:
                 if feature.type == "gene" and feature.qualifiers.get("gene", ["unknown"])[0] == gene:
-                    seq1 = feature.location.extract(record).seq
+                    seq1 = str(feature.location.extract(record).seq)
                     break
         for record in records_2:
             for feature in record.features:
                 if feature.type == "gene" and feature.qualifiers.get("gene", ["unknown"])[0] == gene:
-                    seq2 = feature.location.extract(record).seq
+                    seq2 = str(feature.location.extract(record).seq)
                     break
-
-        # סינון קודוני עצירה
-        seq1 = "".join([codon for codon in str(seq1).split() if codon not in stop_codons])
-        seq2 = "".join([codon for codon in str(seq2).split() if codon not in stop_codons])
-        
-        # ודא שאורכי הרצפים תואמים
-        if len(seq1) % 3 != 0 or len(seq2) % 3 != 0:
-            print(f"Skipping {gene} because its sequence length is not divisible by 3.")
+        seq1 = remove_stop_codons(seq1)
+        seq2 = remove_stop_codons(seq2)
+        if len(seq1) < 9 or len(seq2) < 9:
+            print(f"Skipping {gene} due to short sequence after removing stop codons.")
             continue
-        
-        if len(seq1) != len(seq2):
-            print(f"Skipping {gene} because sequence lengths do not match.")
-            continue
-        
-        codon_seq1 = CodonSeq(str(seq1))
-        codon_seq2 = CodonSeq(str(seq2))     
-        
+        seq1 = pad_sequence(seq1)
+        seq2 = pad_sequence(seq2)
+        aligned_seq1, aligned_seq2 = align_sequences(seq1, seq2)
+        min_length = min(len(aligned_seq1), len(aligned_seq2))
+        aligned_seq1 = aligned_seq1[:min_length]
+        aligned_seq2 = aligned_seq2[:min_length]
+        codon_seq1 = CodonSeq(str(aligned_seq1))
+        codon_seq2 = CodonSeq(str(aligned_seq2))
         try:
-            # חישוב dn ו-ds
-            dN, dS = cal_dn_ds(codon_seq1, codon_seq2)
-            dN_dS_ratio = float(dN / dS)
-            
-            # סוג הסלקציה
+            dN, dS = cal_dn_ds(codon_seq1, codon_seq2, codon_table=codon_table)
+            dN_dS_ratio = float(dN / dS) if dS > 0 else float('inf')
             if dN_dS_ratio > 1:
                 selection_type = "Positive selection"
             elif dN_dS_ratio < 1:
                 selection_type = "Negative selection"
             else:
                 selection_type = "Neutral selection"
-            
             results.append({
                 "Gene": gene,
                 "dN": dN,
@@ -118,9 +140,7 @@ def calculate_dn_ds_for_common_genes(common_genes, records_1, records_2):
         except Exception as e:
             print(f"Error processing gene {gene}: {e}")
             continue
-
     return results
-
 
 def main():
     gencode = {
@@ -157,13 +177,18 @@ def main():
             print(f"Description: {record.description}")
             print(f"Genome Length: {Get_Genome_length(record)}")        
         print(f"Total number of genes: {total_genes}")
-        print(f"Number of protein-coding genes: {protein_coding_genes}")
+        print(f"Number of protein-coding genes: {protein_coding_genes}\n")
     common_genes = compare_gene_sets(gene_sets[accession_numbers[0]], gene_sets[accession_numbers[1]], accession_numbers[0], accession_numbers[1])
-    results = calculate_dn_ds_for_common_genes(common_genes, fetch_genbank_data(accession_numbers[0]), fetch_genbank_data(accession_numbers[1]))
-    print("Gene | dN | dS | dN/dS | Selection type")
+    results = calculate_dn_ds_for_common_genes(
+        common_genes, 
+        fetch_genbank_data(accession_numbers[0]), 
+        fetch_genbank_data(accession_numbers[1])
+    )
+
+    print("\nGene       |  dN   |  dS   | dN/dS |  Selection type")
     print("-" * 50)
     for result in results:
-        print(f"{result['Gene']} | {result['dN']:.3f} | {result['dS']:.3f} | {result['dN/dS']:.3f} | {result['Selection type']}")
+        print(f"{result['Gene']:10} | {result['dN']:.3f} | {result['dS']:.3f} | {result['dN/dS']:.3f} | {result['Selection type']}")
 
 if __name__ == "__main__":
     main()
