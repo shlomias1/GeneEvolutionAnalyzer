@@ -1,79 +1,58 @@
-## Overview
-The **Virus Gene Evolution Analyzer** is a tool designed to compare viral genomes and analyze the evolutionary processes shaping their genes. This tool computes the **dN/dS ratio** for common protein-coding genes shared between two viral genomes (in this case, SARS-CoV-2 strains). The **dN/dS ratio** is a key indicator of the evolutionary pressures acting on genes, classifying them into three categories:
+# Gene Evolution Analyzer
 
-- **Positive selection** (dN/dS > 1): Indicates that mutations that alter the protein sequence are favored, possibly suggesting adaptive evolution.
-- **Negative selection** (dN/dS < 1): Indicates that mutations that alter the protein sequence are detrimental and selected against.
-- **Neutral selection** (dN/dS ≈ 1): Indicates that mutations occur but do not have a significant effect on the organism's fitness.
+## Overview
+This project analyzes the evolution of genes by comparing nucleotide sequences from different GenBank records. It calculates dN/dS ratios to determine the selection pressure on genes and identifies common genes between two genomes.
 
 ## Features
-- **Fetch Genomic Data**: Retrieves viral genomic data from GenBank using accession numbers.
+- **Fetch GenBank Data**: Retrieves nucleotide sequences and annotations from GenBank.
 - **Gene Comparison**: Identifies common and unique genes between two genomes.
-- **dN/dS Calculation**: Computes the **dN (non-synonymous substitutions)** and **dS (synonymous substitutions)** for common genes between the genomes and calculates the **dN/dS ratio**.
-- **Selection Type Classification**: Determines whether a gene is under **positive selection**, **negative selection**, or is **neutral** based on the dN/dS ratio.
+- **Sequence Alignment**: Aligns gene sequences using pairwise codon-based alignment.
+- **dN/dS Calculation**: Computes synonymous (dS) and non-synonymous (dN) substitution rates.
+- **Stop Codon Removal**: Cleans sequences by removing stop codons.
+- **Selection Type Analysis**: Determines whether a gene is under positive, negative, or neutral selection based on dN/dS ratio.
 
-## Installation
-To run this project, you need to have Python installed along with the necessary dependencies.
-
-1. Install **Biopython** and **CodonAlign** via pip:
-
-```bash
-pip install biopython
-```
+## Requirements
+To run this project, ensure you have the following installed:
+- Python 3.x
+- Biopython (`pip install biopython`)
 
 ## Usage
-### Step-by-Step Guide:
-1. **Fetch GenBank data**: The program fetches genomic data for two viruses using their GenBank accession numbers (e.g., NC_045512.2 and PV009232.1).
-2. **Gene Comparison**: The common genes between the two viral genomes are identified.
-3. **Calculate dN/dS Ratio**: For each common gene, the program calculates the **dN/dS ratio** and classifies the gene into one of the following categories:
-   - **Positive Selection**
-   - **Negative Selection**
-   - **Neutral Selection**
-4. **Output**: The results are printed in a tabular format, showing the **gene name**, **dN**, **dS**, **dN/dS ratio**, and the type of selection acting on the gene.
+1. Clone the repository or download the script.
+2. Modify the `accession_numbers` list in `main()` to specify the genomes to compare.
+3. Run the script:
+   ```bash
+   python GeneEvolutionAnalyzer.py
+   ```
+4. The script will fetch data from GenBank, process the sequences, and output a table with dN, dS, and dN/dS ratios for common genes.
 
-### Example Usage:
-To run the program, simply execute the script in Python:
-
-```bash
-python main.py
+## Output Example
 ```
-
-### Example Output:
-
-```text
-Synonymous positions:
-{'ATA': 2, 'ATC': 2, 'ATT': 2, 'ATG': 0, 'ACA': 3, ...}
-
-GenBank Data for NC_045512.2:
-Sequence ID: NC_045512.2
-Description: Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1, complete genome
-Genome Length: 29903
-Total number of genes: 23
-Number of protein-coding genes: 12
-
-GenBank Data for PV009232.1:
-Sequence ID: PV009232.1
-Description: Severe acute respiratory syndrome coronavirus 2 isolate SARS-CoV-2/human/USA/CA-LACPHL-AY09619/2024, complete genome
-Genome Length: 29716
-Total number of genes: 23
-Number of protein-coding genes: 12
-
-compare genes:
-Common genes between NC_045512.2 and PV009232.1: {'ORF10', 'E', 'N', 'M', 'S', 'ORF3a', 'ORF1ab', 'ORF6', 'ORF7b', 'ORF8', 'ORF7a'}
-Genes in NC_045512.2 but not in PV009232.1: set()
-Genes in PV009232.1 but not in NC_045512.2: set()
-
-Gene | dN | dS | dN/dS | Selection type
+Gene       |  dN   |  dS   | dN/dS |  Selection type
 --------------------------------------------------
-ORF10 | 0.056 | 0.018 | 3.111 | Positive selection
-E | 0.045 | 0.025 | 1.800 | Positive selection
-...
+S          | 2.520 | 1.671 | 1.508 | Positive selection
+ORF7b      | 0.010 | 0.039 | 0.248 | Negative selection
+N          | 1.496 | 1.716 | 0.872 | Negative selection
+ORF10      | 0.000 | 0.000 |  inf  | Positive selection
+ORF8       | 0.000 | 0.000 |  inf  | Positive selection
 ```
+
+## Functions Explained
+### `fetch_genbank_data(accession_number)`
+Fetches GenBank data and returns a list of `SeqRecord` objects.
+
+### `compare_gene_sets(gene_set_1, gene_set_2, genome_1, genome_2)`
+Finds common and unique genes between two genomes.
+
+### `calculate_dn_ds_for_common_genes(common_genes, records_1, records_2)`
+Aligns common gene sequences and calculates dN, dS, and dN/dS values.
+
+### `remove_stop_codons(seq)`
+Removes stop codons (`TAA`, `TAG`, `TGA`) from a given sequence.
+
+## Notes
+- The script requires an active internet connection to fetch GenBank data.
+- Stop codons are removed before processing sequences.
+- If dS is `0`, dN/dS is set to `inf` (infinity).
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-Feel free to fork the repository, make changes, and submit pull requests. Contributions for improving functionality, bug fixes, and feature additions are always welcome.
-
-## Contact
-For any questions or suggestions, please contact the author at **shlomiasi1@gmail.com**.
+This project is open-source under the MIT License.
