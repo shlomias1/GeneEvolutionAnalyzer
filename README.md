@@ -1,90 +1,84 @@
-# Genome Analysis Tool
+# Evolutionary Genomic Analysis Tool
 
 ## Overview
-This Python program is designed for analyzing genomic data retrieved from GenBank. It extracts gene information, compares gene sets, calculates synonymous codon positions, aligns sequences, and evaluates evolutionary selection pressure using dN/dS ratios.
+This Python program analyzes evolutionary relationships between genomes using dN/dS ratios. It fetches genomic data from GenBank, extracts gene sequences, aligns them, and calculates synonymous and non-synonymous mutation rates. The program also generates a comparative bar plot for dN and dS values.
 
 ## Features
-- Fetch genomic data from GenBank using accession numbers
-- Extract gene names and compare gene sets
-- Count the total and protein-coding genes
-- Identify synonymous codon positions
-- Remove stop codons and pad sequences for alignment
-- Align sequences using a codon-based approach
-- Calculate dN/dS ratios to infer selection pressure
+- Fetches GenBank data for specified accession numbers.
+- Extracts genome length, gene counts, and protein-coding genes.
+- Identifies common and unique genes between genomes.
+- Calculates synonymous positions for codons.
+- Aligns gene sequences and removes stop codons.
+- Computes dN/dS ratios to determine selection pressure.
+- Visualizes results with a bar chart displaying dN and dS values.
 
 ## Dependencies
-This program requires the following Python libraries:
-- `Biopython`
-- `pandas`
-
-To install the dependencies, run:
-```sh
-pip install biopython pandas
+Ensure you have the following Python libraries installed:
+```bash
+pip install biopython matplotlib pandas numpy
 ```
-
-## Code Structure
-The program is structured into multiple classes:
-
-### 1. `GenBankHandler`
-Handles fetching genomic data from GenBank.
-
-### 2. `GenomeAnalysis`
-- Retrieves gene information.
-- Compares gene sets across genomes.
-
-### 3. `CodonAnalysis`
-- Calculates synonymous codon positions.
-
-### 4. `SequenceProcessor`
-- Removes stop codons.
-- Pads sequences for codon alignment.
-
-### 5. `SequenceAligner`
-- Aligns sequences using the `PairwiseAligner` from `Biopython`.
-
-### 6. `EvolutionaryAnalysis`
-- Extracts gene sequences from records.
-- Calculates dN/dS ratios for evolutionary selection analysis.
 
 ## Usage
-1. Set the email for GenBank queries.
-2. Define a list of accession numbers for genomic sequences.
-3. The program will fetch data, process sequences, and display results in tabular format.
-
-## Output
-- A table of synonymous codon positions.
-- Gene statistics for each genome.
-- A comparative analysis of shared and unique genes.
-- A dN/dS evolutionary comparison table.
-
-## Example Execution
-Run the program with:
-```sh
-python genome_analysis.py
+### Running the Program
+Execute the script with:
+```bash
+python script.py
 ```
 
-Example output:
+### Expected Output
+- **Synonymous Positions**: A table displaying synonymous counts for each codon.
+- **Gene Statistics**: Total and protein-coding gene counts for each genome.
+- **Gene Comparison**: Lists common and unique genes.
+- **Evolutionary Analysis**: A table with dN, dS, dN/dS ratios, and selection type.
+- **Graph**: A bar chart comparing dN and dS values for each gene.
+
+### Example Output
 ```
 ===== Synonymous Positions =====
 Codon  | Synonymous Positions
-----------------------------
 ATA    | 2
 ATC    | 2
 ...
-
 ===== Gene Statistics =====
 GenBank Data for NC_045512.2:
 Total number of genes: 23
 Number of protein-coding genes: 12
 ...
-
 ===== Evolutionary Comparison =====
-Gene       |  dN   |  dS   | dN/dS |  Selection type
+Gene  |  dN   |  dS   | dN/dS | Selection type
 --------------------------------------------------
-S          | 2.520 | 1.671 | 1.508 | Positive selection
-ORF7b      | 0.010 | 0.039 | 0.248 | Negative selection
+S      | 2.520 | 1.671 | 1.508 | Positive selection
 ...
 ```
 
-## License
-This project is licensed under the MIT License.
+## Code Structure
+### Classes
+#### 1. `GenBankHandler`
+Handles fetching genomic data from GenBank.
+#### 2. `GenomeAnalysis`
+Processes genome features including gene extraction and comparison.
+#### 3. `CodonAnalysis`
+Calculates synonymous positions for codons.
+#### 4. `SequenceProcessor`
+Removes stop codons and pads sequences.
+#### 5. `SequenceAligner`
+Performs global sequence alignment.
+#### 6. `EvolutionaryAnalysis`
+Calculates dN/dS ratios and plots comparative graphs.
+
+### Functionality
+- `fetch_data()`: Retrieves genome data from GenBank.
+- `calculate_dn_ds()`: Computes dN, dS, and dN/dS ratios.
+- `plot_dn_ds()`: Plots a bar chart of dN and dS values with labels.
+
+## Graphical Output
+- The generated graph compares dN and dS values for each gene.
+- Each bar displays its respective value above it.
+
+## Future Improvements
+- Support additional evolutionary models.
+- Allow user-defined input for accession numbers.
+- Save results to a file for further analysis.
+
+## Author
+Developed by Shlomi Assayag.
