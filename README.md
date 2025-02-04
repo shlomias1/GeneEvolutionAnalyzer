@@ -1,58 +1,90 @@
-# Gene Evolution Analyzer
+# Genome Analysis Tool
 
 ## Overview
-This project analyzes the evolution of genes by comparing nucleotide sequences from different GenBank records. It calculates dN/dS ratios to determine the selection pressure on genes and identifies common genes between two genomes.
+This Python program is designed for analyzing genomic data retrieved from GenBank. It extracts gene information, compares gene sets, calculates synonymous codon positions, aligns sequences, and evaluates evolutionary selection pressure using dN/dS ratios.
 
 ## Features
-- **Fetch GenBank Data**: Retrieves nucleotide sequences and annotations from GenBank.
-- **Gene Comparison**: Identifies common and unique genes between two genomes.
-- **Sequence Alignment**: Aligns gene sequences using pairwise codon-based alignment.
-- **dN/dS Calculation**: Computes synonymous (dS) and non-synonymous (dN) substitution rates.
-- **Stop Codon Removal**: Cleans sequences by removing stop codons.
-- **Selection Type Analysis**: Determines whether a gene is under positive, negative, or neutral selection based on dN/dS ratio.
+- Fetch genomic data from GenBank using accession numbers
+- Extract gene names and compare gene sets
+- Count the total and protein-coding genes
+- Identify synonymous codon positions
+- Remove stop codons and pad sequences for alignment
+- Align sequences using a codon-based approach
+- Calculate dN/dS ratios to infer selection pressure
 
-## Requirements
-To run this project, ensure you have the following installed:
-- Python 3.x
-- Biopython (`pip install biopython`)
+## Dependencies
+This program requires the following Python libraries:
+- `Biopython`
+- `pandas`
+
+To install the dependencies, run:
+```sh
+pip install biopython pandas
+```
+
+## Code Structure
+The program is structured into multiple classes:
+
+### 1. `GenBankHandler`
+Handles fetching genomic data from GenBank.
+
+### 2. `GenomeAnalysis`
+- Retrieves gene information.
+- Compares gene sets across genomes.
+
+### 3. `CodonAnalysis`
+- Calculates synonymous codon positions.
+
+### 4. `SequenceProcessor`
+- Removes stop codons.
+- Pads sequences for codon alignment.
+
+### 5. `SequenceAligner`
+- Aligns sequences using the `PairwiseAligner` from `Biopython`.
+
+### 6. `EvolutionaryAnalysis`
+- Extracts gene sequences from records.
+- Calculates dN/dS ratios for evolutionary selection analysis.
 
 ## Usage
-1. Clone the repository or download the script.
-2. Modify the `accession_numbers` list in `main()` to specify the genomes to compare.
-3. Run the script:
-   ```bash
-   python GeneEvolutionAnalyzer.py
-   ```
-4. The script will fetch data from GenBank, process the sequences, and output a table with dN, dS, and dN/dS ratios for common genes.
+1. Set the email for GenBank queries.
+2. Define a list of accession numbers for genomic sequences.
+3. The program will fetch data, process sequences, and display results in tabular format.
 
-## Output Example
+## Output
+- A table of synonymous codon positions.
+- Gene statistics for each genome.
+- A comparative analysis of shared and unique genes.
+- A dN/dS evolutionary comparison table.
+
+## Example Execution
+Run the program with:
+```sh
+python genome_analysis.py
 ```
+
+Example output:
+```
+===== Synonymous Positions =====
+Codon  | Synonymous Positions
+----------------------------
+ATA    | 2
+ATC    | 2
+...
+
+===== Gene Statistics =====
+GenBank Data for NC_045512.2:
+Total number of genes: 23
+Number of protein-coding genes: 12
+...
+
+===== Evolutionary Comparison =====
 Gene       |  dN   |  dS   | dN/dS |  Selection type
 --------------------------------------------------
 S          | 2.520 | 1.671 | 1.508 | Positive selection
 ORF7b      | 0.010 | 0.039 | 0.248 | Negative selection
-N          | 1.496 | 1.716 | 0.872 | Negative selection
-ORF10      | 0.000 | 0.000 |  inf  | Positive selection
-ORF8       | 0.000 | 0.000 |  inf  | Positive selection
+...
 ```
 
-## Functions Explained
-### `fetch_genbank_data(accession_number)`
-Fetches GenBank data and returns a list of `SeqRecord` objects.
-
-### `compare_gene_sets(gene_set_1, gene_set_2, genome_1, genome_2)`
-Finds common and unique genes between two genomes.
-
-### `calculate_dn_ds_for_common_genes(common_genes, records_1, records_2)`
-Aligns common gene sequences and calculates dN, dS, and dN/dS values.
-
-### `remove_stop_codons(seq)`
-Removes stop codons (`TAA`, `TAG`, `TGA`) from a given sequence.
-
-## Notes
-- The script requires an active internet connection to fetch GenBank data.
-- Stop codons are removed before processing sequences.
-- If dS is `0`, dN/dS is set to `inf` (infinity).
-
 ## License
-This project is open-source under the MIT License.
+This project is licensed under the MIT License.
