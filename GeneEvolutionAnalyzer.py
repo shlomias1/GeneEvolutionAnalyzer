@@ -4,6 +4,8 @@ from Bio import Entrez, SeqIO
 from Bio.codonalign.codonseq import CodonSeq, cal_dn_ds
 from Bio.Align import PairwiseAligner
 from Bio.Data import CodonTable
+import matplotlib.pyplot as plt
+import numpy as np
 
 class GenBankHandler:
     def __init__(self, email):
@@ -113,6 +115,34 @@ class EvolutionaryAnalysis:
         seq1, seq2 = SequenceProcessor.remove_stop_codons(seq1), SequenceProcessor.remove_stop_codons(seq2)
         return SequenceProcessor.pad_sequence(seq1), SequenceProcessor.pad_sequence(seq2)
 
+    def plot_dn_ds(self, results):
+        """Plots dN and dS values for each gene in the results list with labels on bars."""
+        if not results:
+            print("No results available to plot.")
+            return
+        genes = [result["Gene"] for result in results]
+        dn_values = [result["dN"] for result in results]
+        ds_values = [result["dS"] for result in results]
+        x = np.arange(len(genes)) 
+        width = 0.4 
+        fig, ax = plt.subplots(figsize=(12, 6))
+        bars_dn = ax.bar(x - width/2, dn_values, width, label='dN', color='blue', alpha=0.7)
+        bars_ds = ax.bar(x + width/2, ds_values, width, label='dS', color='orange', alpha=0.7)
+        for bar in bars_dn:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, height, f'{height:.2f}', ha='center', va='bottom', fontsize=10, color='black')
+        for bar in bars_ds:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, height, f'{height:.2f}', ha='center', va='bottom', fontsize=10, color='black')
+        ax.set_xlabel("Gene")
+        ax.set_ylabel("Values")
+        ax.set_title("Comparison of dN and dS Values for Genes")
+        ax.set_xticks(x)
+        ax.set_xticklabels(genes, rotation=45, ha="right")
+        ax.legend()
+        plt.tight_layout()
+        plt.show()
+
 def main():
     gencode = {
         'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
@@ -159,6 +189,7 @@ def main():
     print("-" * 50)
     for result in results:
         print(f"{result['Gene']:10} | {result['dN']:.3f} | {result['dS']:.3f} | {result['dN/dS']:.3f} | {result['Selection type']}")
+    evolution.plot_dn_ds(results)
 
 if __name__ == "__main__":
     main()
